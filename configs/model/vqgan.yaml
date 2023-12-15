@@ -1,0 +1,35 @@
+_target_: src.models.vqgan_module.VQGANModule
+
+generator:
+  _target_: src.models.components.net.vqgan_net.VQGAN
+  img_channels: 3
+  hidden_size: 256
+  num-codebook-vectors: 1024
+  beta: 0.25
+
+discriminator:
+  _target_: src.models.components.net.discriminator_net.Discriminator
+  image_channels: 3
+
+optimizer1:
+  _target_: torch.optim.Adam
+  _partial_: true
+  lr: 0.0001
+  eps: 1e-08
+  weight_decay: 0.0
+  beta1: 0.5
+  beta2: 0.9
+
+optimizer2:
+  _target_: torch.optim.Adam
+  _partial_: true
+  lr: 0.0001
+  eps: 1e-08
+  weight_decay: 0.0
+  beta1: 0.5
+  beta2: 0.9
+
+disc_factor: 1.
+disc_start: 10000
+perceptual_loss_factor: 1.
+l2_loss_factor: 1.

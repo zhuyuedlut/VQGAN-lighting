@@ -1,0 +1,6 @@
+_target_: src.data.cats_vs_dogs.CatsVSDogsDataModule
+data_dir: ${paths.data_dir}
+batch_size: 6
+train_val_test_ratio: [ 0,7, 0.1, 0.2 ]
+num_workers: 24
+pin_memory: False

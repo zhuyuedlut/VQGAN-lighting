@@ -8,9 +8,11 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from src.models.base.norms import GroupNorm
 from src.models.base.activations import Swish
+
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels: int, out_channels: int):
@@ -27,14 +29,16 @@ class ResidualBlock(nn.Module):
         )
 
         if in_channels != out_channels:
-            self.transform = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1, stride=1, padding=0)
+            self.transform = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1, stride=1,
+                                       padding=0)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.in_channels != self.out_channels:
             return self.block(x) + self.transform(x)
         return x + self.block(x)
 
-class NonLocalBlock(nn.Module):
+
+class AttnBlock(nn.Module):
     def __init__(self, in_channels: int):
         super().__init__()
         self.in_channels = in_channels
@@ -67,3 +71,24 @@ class NonLocalBlock(nn.Module):
         attn = attn.reshape(b, c, h, w)
 
         return self.proj_out(attn) + x
+
+
+class DownSampleBlock(nn.Module):
+    def __init__(self, channels: int):
+        super().__init__()
+        self.conv = nn.Conv2d(channels, channels, 3, 2, 0)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        pad = (0, 1, 0, 1)
+        x = torch.nn.functional.pad(x, pad, mode="constant", value=0)
+        return self.conv(x)
+
+
+class UpSampleBlock(nn.Module):
+    def __init__(self, channels: int):
+        super().__init__()
+        self.conv = nn.Conv2d(channels, channels, 3, 1, 1)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = F.interpolate(x, scale_factor=2.)
+        return self.conv(x)
