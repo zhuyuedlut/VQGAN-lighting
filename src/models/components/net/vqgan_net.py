@@ -22,7 +22,7 @@ class VQGAN(nn.Module):
         self.decoder = Decoder(img_channels=img_channels, hidden_size=hidden_size)
         self.codebook = Codebook(num_codebook_vectors=num_codebook_vectors, hidden_size=hidden_size, beta=beta)
         self.quant_conv = nn.Conv2d(hidden_size, hidden_size, 1)
-        self.quant_conv = nn.Conv2d(hidden_size, hidden_size, 1)
+        self.post_quant_conv = nn.Conv2d(hidden_size, hidden_size, 1)
 
     def forward(self, imgs: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, float]:
         encoded_images = self.encoder(imgs)

@@ -5,10 +5,11 @@
 # @date       : 2023/12/13 11:27
 # @brief      : 
 """
+from typing import Tuple
+
 import torch
 import torch.nn as nn
 
-from typing import Tuple
 
 class Codebook(nn.Module):
     def __init__(self, num_codebook_vectors: int, hidden_size: int, beta: float):
@@ -21,7 +22,7 @@ class Codebook(nn.Module):
         self.embedding.weight.data.uniform_(-1.0 / self.num_codebook_vectors, 1.0 / self.num_codebook_vectors)
 
     def forward(self, z: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, float]:
-        z = z.permute(0, 2, 3, 1)
+        z = z.permute(0, 2, 3, 1).contiguous()
         z_flattened = z.view(-1, self.hidden_size)
 
         d = (torch.sum(z_flattened ** 2, dim=1, keepdim=True) +

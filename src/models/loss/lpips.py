@@ -5,16 +5,15 @@
 # @date       : 2023/12/13 11:17
 # @brief      :
 """
-import os
-import requests
 import hashlib
+import os
+from collections import namedtuple
 
+import requests
 import torch
 import torch.nn as nn
-
-from tqdm import tqdm
-from collections import namedtuple
 from torchvision.models import vgg16
+from tqdm import tqdm
 
 URL_MAP = {
     "vgg_lpips": "https://heibox.uni-heidelberg.de/f/607503859c864bc1b30b/?dl=1"
@@ -80,7 +79,7 @@ def get_ckpt_path(name, root, check=False):
 class VGG16(nn.Module):
     def __init__(self):
         super().__init__()
-        vgg_pretrained_features = vgg16(pretrained=True).features
+        vgg_pretrained_features = vgg16(weights=True).features
         slices = [vgg_pretrained_features[i] for i in range(30)]
         self.slice1 = nn.Sequential(*slices[0:4])
         self.slice2 = nn.Sequential(*slices[4:9])

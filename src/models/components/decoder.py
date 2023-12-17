@@ -11,7 +11,7 @@ from src.models.base.blocks import ResidualBlock, AttnBlock, UpSampleBlock, Grou
 
 
 class Decoder(nn.Module):
-    def __init__(self, image_channels: int, hidden_size: int):
+    def __init__(self, img_channels: int, hidden_size: int):
         super().__init__()
         attn_resolutions = [16]
         ch_mult = [128, 128, 256, 256, 512]
@@ -39,10 +39,9 @@ class Decoder(nn.Module):
 
         layers.append(GroupNorm(block_in))
         # layers.append(Swish())
-        layers.append(nn.Conv2d(block_in, image_channels, kernel_size=3, stride=1, padding=1))
+        layers.append(nn.Conv2d(block_in, img_channels, kernel_size=3, stride=1, padding=1))
 
         self.model = nn.Sequential(*layers)
 
     def forward(self, x):
         return self.model(x)
-

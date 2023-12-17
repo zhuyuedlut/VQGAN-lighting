@@ -1,11 +1,12 @@
 import os
 from typing import Tuple, Optional, Any
 
+import albumentations
+import numpy as np
 from PIL import Image
 from lightning import LightningDataModule
 from torch import Tensor
 from torch.utils.data import Dataset, random_split, DataLoader
-from torchvision.transforms import ToTensor
 
 
 class CatsVSDogsDataset(Dataset):
@@ -13,21 +14,31 @@ class CatsVSDogsDataset(Dataset):
         self.data_dir = data_dir
         self.classes = ['Dog', 'Cat']
         self.filepaths = []
-        self.labels = []
 
-        self.transform = ToTensor()
+        self.rescaler = albumentations.SmallestMaxSize(max_size=256)
+        self.cropper = albumentations.CenterCrop(height=256, width=256)
+        self.preprocessor = albumentations.Compose([self.rescaler, self.cropper])
 
         for label, class_name in enumerate(self.classes):
             class_dir = os.path.join(self.data_dir, class_name)
-            # 遍历每个类别目录下的图片
             for filename in os.listdir(class_dir):
                 if filename.endswith('.jpg'):
-                    self.filepaths.append(os.path.join(class_dir, filename))
-                    self.labels.append(label)
+                    filepath = os.path.join(class_dir, filename)
+                    try:
+                        Image.open(filepath)
+                        self.filepaths.append(filepath)
+                    except IOError:
+                        print(f"Cannot open image at {filepath}. Skipping.")
 
     def __getitem__(self, idx: int) -> Tensor:
-        image = Image.open(self.filepaths[idx]).convert('RGB')
-        return self.transform(image)
+        image = Image.open(self.filepaths[idx])
+        if not image.mode == "RGB":
+            image = image.convert("RGB")
+        image = np.array(image).astype(np.uint8)
+        image = self.preprocessor(image=image)["image"]
+        image = (image / 127.5 - 1.0).astype(np.float32)
+        image = image.transpose(2, 0, 1)
+        return image
 
     def __len__(self):
         return len(self.filepaths)

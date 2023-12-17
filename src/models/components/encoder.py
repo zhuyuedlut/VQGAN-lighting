@@ -30,9 +30,9 @@ class Encoder(nn.Module):
                 if resolution in attn_resolution:
                     layers.append(AttnBlock(in_channels))
                 #
-                if i != len(channels) - 2:
-                    layers.append(DownSampleBlock(channels[i + 1]))
-                    resolution //= 2
+            if i != len(channels) - 2:
+                layers.append(DownSampleBlock(channels[i + 1]))
+                resolution //= 2
         layers.append(ResidualBlock(channels[-1], channels[-1]))
         layers.append(AttnBlock(channels[-1]))
         layers.append(ResidualBlock(channels[-1], channels[-1]))
